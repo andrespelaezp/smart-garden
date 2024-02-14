@@ -1,0 +1,69 @@
+esphome:
+  name: garden-test
+  platform: ESP8266 # ESP8266 or ESP32
+  board: nodemcuv2  # Any ESP8266 or ESP32 board
+
+  includes:
+    - SoilMoistureSensor.h
+
+# WiFi connection to base station
+wifi:
+  ssid: !secret esphome_wifi_ssid
+  password: !secret esphome_wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  # ap:
+  #   ssid: "PC Power Fallback Hotspot"
+  #   password: !secret esphome_ap_password
+
+# captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: !secret esphome_api_password
+
+# # Enable OTA update via WiFi
+# ota:
+#   password: !secret esphome_ota_password
+
+switch:
+  - platform: gpio
+    name: "Led Power On"
+    icon: "mdi:electric-switch"
+    pin: D1   # Power button output pin
+    id: power_short_press
+    inverted: no
+    # on_turn_on:
+    # - delay: 150ms
+    # - switch.turn_off: power_short_press
+  # - platform: gpio
+  #   name: "PC HARD POWER OFF"
+  #   icon: "mdi:electric-switch"
+  #   pin: D2   # Power button output pin
+  #   id: power_long_press
+  #   inverted: no
+  #   on_turn_on:
+  #   - delay: 3500ms
+  #   - switch.turn_off: power_long_press
+
+sensor:
+- platform: custom
+  lambda: |-
+    auto my_sensor = new SoilMoistureSensor();
+    App.register_component(my_sensor);
+    return {my_sensor};
+
+  sensors:
+    name: "Soil Moisture Sensor"
+    unit_of_measurement: Units
+    accuracy_decimals: 1
+
+# binary_sensor:
+#   - platform: gpio
+#     pin: 
+#        # Power detect input pin (readback from Reset button)
+#     name: "PC Power State"
+#     device_class: power
