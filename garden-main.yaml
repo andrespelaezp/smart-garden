@@ -1,15 +1,20 @@
 esphome:
-  name: garden-test
+  name: !secret device #garden-board-test
   platform: ESP8266 # ESP8266 or ESP32
-  board: nodemcuv2  # Any ESP8266 or ESP32 board
+  board: nodemcuv2 #esp01_1m #nodemcuv2  # Any ESP8266 or ESP32 board
 
-  includes:
-    - SoilMoistureSensor.h
+  # includes:
+  #   - SoilMoistureSensor.h
 
 # WiFi connection to base station
 wifi:
   ssid: !secret esphome_wifi_ssid
   password: !secret esphome_wifi_password
+
+  manual_ip:
+    static_ip: !secret ip_address #192.168.1.121
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   # ap:
@@ -20,6 +25,7 @@ wifi:
 
 # Enable logging
 logger:
+  level: DEBUG
 
 # Enable Home Assistant API
 api:
@@ -29,37 +35,48 @@ api:
 # ota:
 #   password: !secret esphome_ota_password
 
-switch:
-  - platform: gpio
-    name: "Led Power On"
-    icon: "mdi:electric-switch"
-    pin: D1   # Power button output pin
-    id: power_short_press
-    inverted: no
-    # on_turn_on:
-    # - delay: 150ms
-    # - switch.turn_off: power_short_press
-  # - platform: gpio
-  #   name: "PC HARD POWER OFF"
-  #   icon: "mdi:electric-switch"
-  #   pin: D2   # Power button output pin
-  #   id: power_long_press
-  #   inverted: no
-  #   on_turn_on:
-  #   - delay: 3500ms
-  #   - switch.turn_off: power_long_press
+# switch:
+#   - platform: gpio
+#     name: "Led Power On"
+#     icon: "mdi:electric-switch"
+#     pin: D1   # Power button output pin
+#     id: power_short_press
+#     inverted: no
+#     # on_turn_on:
+#     # - delay: 150ms
+#     # - switch.turn_off: power_short_press
+#   # - platform: gpio
+#   #   name: "PC HARD POWER OFF"
+#   #   icon: "mdi:electric-switch"
+#   #   pin: D2   # Power button output pin
+#   #   id: power_long_press
+#   #   inverted: no
+#   #   on_turn_on:
+#   #   - delay: 3500ms
+#   #   - switch.turn_off: power_long_press
 
-sensor:
-- platform: custom
-  lambda: |-
-    auto my_sensor = new SoilMoistureSensor();
-    App.register_component(my_sensor);
-    return {my_sensor};
+# sensor:
+  # - platform: adc
+  #   pin: A0
+  #   name: "Soil Moisture Sensor"
+  #   update_interval: 5s
+  #   filters:
+  #   - calibrate_linear:
+  #     - 1023 -> 0.0
+  #     - 10 -> 100.0
+    # filters:
+    #   - multiply: 3.3
 
-  sensors:
-    name: "Soil Moisture Sensor"
-    unit_of_measurement: Units
-    accuracy_decimals: 1
+# - platform: custom
+#   lambda: |-
+#     auto my_sensor = new SoilMoistureSensor();
+#     App.register_component(my_sensor);
+#     return {my_sensor};
+
+#   sensors:
+#     name: "Soil Moisture Sensor"
+#     unit_of_measurement: Units
+#     accuracy_decimals: 1
 
 # binary_sensor:
 #   - platform: gpio
@@ -67,3 +84,61 @@ sensor:
 #        # Power detect input pin (readback from Reset button)
 #     name: "PC Power State"
 #     device_class: power
+
+sensor:
+  - platform: dht
+    pin: D1
+    temperature:
+      name: "DHT ESP-12E Temperature"
+      accuracy_decimals: 0
+      
+    humidity:
+      name: "DHT ESP-12E Humidity"
+    update_interval: 60s
+    
+  - platform: adc
+    pin: A0
+    name: "Soil Moisture Sensor"
+    unit_of_measurement: "%"
+    update_interval: 5min
+    id: soil_moisture_sensor
+    filters:
+    - calibrate_linear:
+        - 0.900 -> 0.00
+        - 0.030 -> 100.00
+    - lambda: |
+        if (x < 0) return 0; 
+        else if (x > 100) return 100;
+        else return (x); 
+      # Find a way to report 0V as error
+    accuracy_decimals: 1
+    
+# switch:
+#   - platform: gpio
+#     name: "Moisture Sensor Power"
+#     id: moisture_sensor_power
+#     pin:
+#       number: D2
+#       mode: OUTPUT
+#     restore_mode: ALWAYS_ON
+
+# interval:
+#   - interval: 20s #1min
+#     then:
+#       - switch.turn_on: moisture_sensor_power
+#       - delay: 2s
+#       - component.update: soil_moisture_sensor
+#       - delay: 2s
+#       - switch.turn_off: moisture_sensor_power
+
+
+# #LDR Light Sensor
+#   - platform: custom
+#     lambda: |-
+#       auto my_sensor = new SoilMoistureSensor();
+#       App.register_component(my_sensor);
+#       return {my_sensor};
+#     sensors:
+#       name: "Soil Moisture Sensor"
+#       unit_of_measurement: "%"
+#       accuracy_decimals: 1
