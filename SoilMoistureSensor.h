@@ -36,11 +36,11 @@ int current_value;
       //set current_value equal to output_value
       output_value= constrain(output_value,10,1023); 
       //set the contrain on output_value. Minimum = 10 Maximum = 1023 
-      output_value= map(output_value,300,700,120,0); 
+      output_value= map(output_value,750,870,120,0); 
         
       Serial.println("-- output_value --");
       Serial.println(output_value);
 
-      publish_state(output_value);
+      publish_state(analogRead(A0));
     }
 };
