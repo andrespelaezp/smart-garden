@@ -1,2 +1,2 @@
 # smart-garden
-Monitor and improve food garden's life
+Monitor and water vegetable garden's plants
