@@ -14,7 +14,7 @@ int threshold = 800;
 //set the threshold value = 800
 int current_value;
 
-    SoilMoistureSensor() : PollingComponent(15000) {}
+    SoilMoistureSensor() : PollingComponent(600000) {}
     
     void setup() override {
       Serial.begin(115200);
@@ -24,7 +24,6 @@ int current_value;
 
     void update() override {
       // Serial.println("-- update --");
-
       // Serial.println(analogRead(A0));
 
       output_value= analogRead(A0);

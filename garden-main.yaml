@@ -41,21 +41,20 @@ sensor:
     temperature:
       name: "DHT ESP-12E Temperature"
       accuracy_decimals: 0
-      
     humidity:
       name: "DHT ESP-12E Humidity"
-    update_interval: 60s
+    update_interval: 5min
     
   - platform: adc
     pin: A0
     name: "Soil Moisture Sensor"
     unit_of_measurement: "%"
-    update_interval: 5min
+    update_interval: 10min
     id: soil_moisture_sensor
     filters:
     - calibrate_linear:
-        - 0.87 -> 0.00
-        - 0.75 -> 100.00
+        - 0.800 -> 0.00
+        - 0.400 -> 100.00
     accuracy_decimals: 1
 
   - platform: custom
@@ -67,3 +66,18 @@ sensor:
       name: "Soil Moisture Sensor2"
       unit_of_measurement: "V"
       accuracy_decimals: 1
+
+# deep sleep
+deep_sleep:
+  id: deep_sleep_mode
+  sleep_duration: 11h
+  
+time:
+  - platform: homeassistant
+sun:
+  latitude: 5.0410°
+  longitude: 75.3815°
+  on_sunset:
+    - then:
+        - deep_sleep.enter: deep_sleep_mode
+        - logger.log: Good evening, time to go to sleep!
